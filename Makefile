@@ -1,3 +1,5 @@
+SHELL := /bin/bash
+
 .PHONY: release
 
 # Usage: make release version=v1.0.1
@@ -6,7 +8,7 @@ release:
 		echo "Error: version is not set. Usage: make release version=v1.0.1"; \
 		exit 1; \
 	fi
-	@if [[ ! "$(version)" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then \
+	@if [[ ! "$(version)" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$$ ]]; then \
 		echo "Error: version must be in format vX.Y.Z (e.g., v1.0.1)"; \
 		exit 1; \
 	fi
