@@ -1,0 +1,55 @@
+name: "Drift Check"
+description: "Run drift to check for documentation drift"
+author: "driftee-ai"
+branding:
+  icon: "check-circle"
+  color: "green"
+inputs:
+  version:
+    description: "Version of Drift CLI to use"
+    required: false
+    default: "v0.1.1"
+  config:
+    description: "Path to the .drift.yaml config file"
+    required: false
+    default: ".drift.yaml"
+  gemini-api-key:
+    description: "API key for the Gemini provider"
+    required: false
+  openai-api-key:
+    description: "API key for the OpenAI provider"
+    required: false
+  changed-files:
+    description: "A comma-separated list of changed files to check"
+    required: false
+runs:
+  using: "composite"
+  steps:
+    - name: Install Drift
+      env:
+        DRIFT_VERSION: ${{ inputs.version }}
+      run: |
+        set -e
+        echo "Installing Drift version $DRIFT_VERSION"
+        VERSION_NO_V=${DRIFT_VERSION#v}
+        # Currently hardcoded to Linux x86_64 for standard GitHub Runners
+        DOWNLOAD_URL="https://github.com/driftee-ai/drift/releases/download/$DRIFT_VERSION/drift_${VERSION_NO_V}_Linux_x86_64.tar.gz"
+        echo "Downloading from: $DOWNLOAD_URL"
+        curl --fail -sSL "$DOWNLOAD_URL" -o drift.tar.gz
+        tar -xzf drift.tar.gz drift
+        sudo install drift /usr/local/bin/
+      shell: bash
+
+    - name: Run Drift Check
+      env:
+        GEMINI_API_KEY: ${{ inputs.gemini-api-key }}
+        OPENAI_API_KEY: ${{ inputs.openai-api-key }}
+        DRIFT_CONFIG: ${{ inputs.config }}
+        CHANGED_FILES: ${{ inputs.changed-files }}
+      run: |
+        if [ -n "$CHANGED_FILES" ]; then
+          drift check --config "$DRIFT_CONFIG" --changed-files "$CHANGED_FILES"
+        else
+          drift check --config "$DRIFT_CONFIG"
+        fi
+      shell: bash
