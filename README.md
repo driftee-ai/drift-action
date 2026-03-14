@@ -24,7 +24,7 @@ This action runs `drift` to check for documentation drift in your repository.
 
 ## Inputs
 
-- `version`: Version of Drift CLI to use. Defaults to `v0.1.1`.
+- `version`: Version of Drift CLI to use. Defaults to `v0.1.2`.
 - `config`: Path to the `.drift.yaml` config file. Defaults to `.drift.yaml`.
 - `changed-files`: A comma-separated list of changed files to check.
 - `gemini-api-key`: API key for the Gemini provider.

@@ -8,7 +8,7 @@ inputs:
   version:
     description: "Version of Drift CLI to use"
     required: false
-    default: "v0.1.1"
+    default: "v0.1.2"
   config:
     description: "Path to the .drift.yaml config file"
     required: false
