@@ -22,6 +22,10 @@ inputs:
   changed-files:
     description: "A comma-separated list of changed files to check"
     required: false
+  diff-only:
+    description: "Only fail if the detected drift was caused by the provided git diff"
+    required: false
+    default: "false"
 runs:
   using: "composite"
   steps:
@@ -46,10 +50,26 @@ runs:
         OPENAI_API_KEY: ${{ inputs.openai-api-key }}
         DRIFT_CONFIG: ${{ inputs.config }}
         CHANGED_FILES: ${{ inputs.changed-files }}
+        DIFF_ONLY: ${{ inputs.diff-only }}
       run: |
+        CMD="drift check --config \"$DRIFT_CONFIG\""
+        
         if [ -n "$CHANGED_FILES" ]; then
-          drift check --config "$DRIFT_CONFIG" --changed-files "$CHANGED_FILES"
-        else
-          drift check --config "$DRIFT_CONFIG"
+          CMD="$CMD --changed-files \"$CHANGED_FILES\""
         fi
+        
+        if [ "$DIFF_ONLY" = "true" ]; then
+          # Ensure fetch-depth: 0 was used in actions/checkout so we have history
+          # Fallback to origin/main if base_ref is missing
+          BASE_REF=${GITHUB_BASE_REF:-main}
+          # Fetch just in case to ensure we have the remote branch
+          git fetch origin $BASE_REF || true
+          
+          echo "Generating git diff against origin/$BASE_REF..."
+          git diff origin/$BASE_REF...HEAD > pr.diff
+          CMD="$CMD --diff-only --diff pr.diff"
+        fi
+        
+        echo "Running: $CMD"
+        eval "$CMD"
       shell: bash
